@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>eBay Request Parser</title>
+</head>
+<body>
+    <h2>Submit Title to eBay GraphQL API</h2>
+    <form id="apiForm">
+        <label for="title">Enter Title:</label>
+        <input type="text" id="title" name="title" required>
+        <button type="submit">Submit</button>
+    </form>
+
+    <h3>Response Description:</h3>
+    <p id="description"></p>
+
+    <script>
+        document.getElementById('apiForm').addEventListener('submit', function(event) {
+            event.preventDefault();  // Prevent form from refreshing the page
+            const title = document.getElementById('title').value;
+
+            const requestData = {
+                query: "query GenAiQuery($input: GenerativeDescriptionInput!) {\n  generativeDescription(input: $input) {\n    correlationId\n    description\n    modelName\n  }\n}",
+                operationName: "GenAiQuery",
+                variables: {
+                    input: {
+                        title: title
+                    }
+                }
+            };
+
+            fetch('https://www.ebay.com/lstng/gql', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'multipart/mixed, application/graphql-response+json, application/graphql+json, application/json',
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:131.0) Gecko/20100101 Firefox/131.0',
+                    'Referer': 'https://www.ebay.com/lstng?draftId=4456588671012&mode=AddItem',
+                    'Cookie': 's=BAQAAAZJU03gwAAWAAAEAB2cPWchhbWFtaDc3AAMAAWcPWcgwAAwACmcPWcgyNjE4NTY5Njg4ABEADGcODPgwMDAwMGFtYW1oNzcAPQAHZw9ZyGFtYW1oNzcAqAABZw9ZyDEA+AAgZw5jEjg0ODliNGU3MTkyMGE2MjY3NmJmZDBiNGZlMWFlMmEwAWUAA2cPWcgjMDIhszHiYYGv2fOjrkEgtlgsIp0VQw**',
+                },
+                body: JSON.stringify(requestData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                const description = data.data.generativeDescription.description;
+                document.getElementById('description').textContent = description;
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('description').textContent = 'Failed to fetch description.';
+            });
+        });
+    </script>
+</body>
+</html>
